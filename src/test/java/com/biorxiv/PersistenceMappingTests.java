@@ -1,10 +1,10 @@
 package com.biorxiv;
 
-import com.biorxiv.article.Article;
-import com.biorxiv.notification.Notification;
-import com.biorxiv.notification.NotificationStatus;
-import com.biorxiv.subscription.Subscription;
-import com.biorxiv.user.User;
+import com.biorxiv.entity.Article;
+import com.biorxiv.entity.Notification;
+import com.biorxiv.entity.NotificationStatus;
+import com.biorxiv.entity.Subscription;
+import com.biorxiv.entity.User;
 import jakarta.persistence.PersistenceException;
 import org.hibernate.Hibernate;
 import org.junit.jupiter.api.Test;

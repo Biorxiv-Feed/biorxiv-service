@@ -30,14 +30,27 @@ No linter/formatter is configured.
 
 ## Architecture
 
-Modular monolith, one package per business module under `com.biorxiv`:
+Monolith covering four business areas — article (bioRxiv retrieval/persistence), user (Telegram users, `daily_article_limit`), subscription (user ↔ category), notification (per-(user, article) delivery tracking).
 
-- `article` — bioRxiv retrieval, parsing, persistence (`Article`)
-- `user` — Telegram users (`User`, holds `daily_article_limit`)
-- `subscription` — user ↔ category subscriptions (`Subscription`)
-- `notification` — per-(user, article) delivery tracking (`Notification`, `NotificationStatus`)
+Code is organized **by layer**, not by business area (chosen by the user):
 
-Entities sit directly in their module package; repositories/services for a module should go alongside them. Cross-module references are JPA relationships (`Subscription`/`Notification` → `User`, `Notification` → `Article`).
+- `com.biorxiv.entity` — all JPA entities and enums (`Article`, `User`, `Subscription`, `Notification`, `NotificationStatus`)
+- `com.biorxiv.repository` — all Spring Data repositories (`<Entity>Repository`)
+- `com.biorxiv.service` — service interfaces (`<Entity>Service`, one per entity); `com.biorxiv.service.impl` — their `@Service` implementations (`<Entity>ServiceImpl`)
+- `com.biorxiv.config` (`ClockConfig`), `com.biorxiv.exception` (`NotFoundException`), `com.biorxiv.util` (`CategoryUtils`)
+- Future layers follow the same pattern, not per-module packages.
+
+Repositories hold only query methods that a known feature needs (dedup checks, subscriber lookup by category, delivery queue, daily-limit count) — business rules belong in services.
+
+### Service conventions
+
+- Callers depend on the interface; implementations use `@Slf4j`, `@RequiredArgsConstructor` (constructor injection) and class-level `@Transactional`, with `@Transactional(readOnly = true)` on read methods. Updates rely on dirty checking (modify the managed entity, no explicit `save`).
+- Services may call other services (e.g. `SubscriptionService` → `UserService.getById`) rather than reaching into another entity's repository.
+- Missing entity → `NotFoundException`; invalid argument → `IllegalArgumentException`.
+- Logging: `info` for state changes, `debug` for per-item detail, `warn` for failed deliveries/ignored updates. Log ids, not usernames or message content.
+- "Now" comes from the injected `Clock` bean, never `LocalDateTime.now()` — tests replace it with a fixed clock. (`created_at` is the exception: Hibernate's `@CreationTimestamp` uses system time.)
+- Categories are matched as exact strings, so every write and lookup goes through `CategoryUtils.normalize` (trim, collapse spaces, lower case). Article and subscription categories must use the same form.
+- Business rules currently in services: daily limit range `UserService.MIN/MAX_DAILY_ARTICLE_LIMIT` (1–50); a failed notification is retried while `PENDING` and becomes `FAILED` after `NotificationService.MAX_ATTEMPTS` (3); status updates on a non-`PENDING` notification are ignored with a warning. Entities reference each other via JPA relationships (`Subscription`/`Notification` → `User`, `Notification` → `Article`). JPQL that names an enum constant uses its FQN (`com.biorxiv.entity.NotificationStatus.SENT`) — update it if the package moves.
 
 ### Persistence conventions
 
@@ -55,4 +68,4 @@ Entities sit directly in their module package; repositories/services for a modul
 - **Never read `.env`** (no Read/cat/Get-Content/grep on it, not even masked). Use `.env.example` for variable names; if an actual value is needed, ask the user.
 - `application.yaml` imports `./.env` (`spring.config.import: optional:file:./.env[.properties]`) for `DB_HOST/DB_PORT/DB_NAME/DB_USERNAME/DB_PASSWORD`; the same `.env` drives `docker-compose.yml`. Run from repo root. Template: `.env.example`.
 - `application-dev.yaml` / `application-prod.yaml` exist but are empty; no profile is active by default.
-- Tests ignore `.env`: `TestcontainersConfiguration` supplies a `@ServiceConnection` Postgres (`postgres:latest`; compose uses `postgres:18`). DB tests must `@Import(TestcontainersConfiguration.class)`; `@DataJpaTest` + `TestEntityManager` (Boot 4 packages: `org.springframework.boot.data.jpa.test.autoconfigure`, `org.springframework.boot.jpa.test.autoconfigure`) runs Flyway against the container.
+- Tests ignore `.env`: `TestcontainersConfiguration` supplies a `@ServiceConnection` Postgres (`postgres:latest`; compose uses `postgres:18`). DB tests must `@Import(TestcontainersConfiguration.class)` (it is `public`, so tests can live in the package they test, e.g. `com.biorxiv.repository.UserRepositoryTests`). Service tests are `@DataJpaTest` + `@Import({TestcontainersConfiguration.class, ServiceTestConfiguration.class})`, which adds the service impls and a fixed `Clock` at `ServiceTestConfiguration.NOW` — keep that import list identical across test classes so they share one Spring context (one container); `@DataJpaTest` + `TestEntityManager` (Boot 4 packages: `org.springframework.boot.data.jpa.test.autoconfigure`, `org.springframework.boot.jpa.test.autoconfigure`) runs Flyway against the container.

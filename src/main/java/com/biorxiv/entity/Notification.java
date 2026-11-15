@@ -1,7 +1,5 @@
-package com.biorxiv.notification;
+package com.biorxiv.entity;
 
-import com.biorxiv.article.Article;
-import com.biorxiv.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
