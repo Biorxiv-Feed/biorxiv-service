@@ -26,14 +26,14 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public Optional<Article> saveIfNew(Article article) {
         if (articleRepository.existsByDoiAndVersion(article.getDoi(), article.getVersion())) {
-            log.debug("Skipped duplicate article doi={} v{}", article.getDoi(), article.getVersion());
+            log.trace("Skipped duplicate article doi={} v{}", article.getDoi(), article.getVersion());
             return Optional.empty();
         }
         article.setCategory(CategoryUtils.normalize(article.getCategory()));
         // The API mixes "New Results" and "new results"; same canonical form as categories.
         article.setType(CategoryUtils.normalize(article.getType()));
         Article saved = articleRepository.save(article);
-        log.debug("Saved article id={} doi={} v{}", saved.getId(), saved.getDoi(), saved.getVersion());
+        log.trace("Saved article id={} doi={} v{}", saved.getId(), saved.getDoi(), saved.getVersion());
         return Optional.of(saved);
     }
 
@@ -43,7 +43,8 @@ public class ArticleServiceImpl implements ArticleService {
         for (Article article : articles) {
             saveIfNew(article).ifPresent(saved::add);
         }
-        log.info("Saved {} new of {} articles ({} duplicates skipped)",
+        // Per-batch detail; callers such as ArticleFetchService log the per-run summary at INFO.
+        log.debug("Saved {} new of {} articles ({} duplicates skipped)",
                 saved.size(), articles.size(), articles.size() - saved.size());
         return saved;
     }

@@ -79,6 +79,8 @@ public class UserServiceImpl implements UserService {
         if (user.getActive()) {
             user.setActive(false);
             log.info("Deactivated user id={}", userId);
+        } else {
+            log.debug("User id={} is already inactive", userId);
         }
     }
 

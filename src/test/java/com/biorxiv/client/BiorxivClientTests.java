@@ -36,7 +36,7 @@ class BiorxivClientTests {
     private static final LocalDate DAY = LocalDate.of(2026, 11, 12);
 
     @Autowired
-    private BiorxivClient client;
+    private BiorxivClientImpl client;   // concrete type: only this bean is under test
 
     @Autowired
     private MockRestServiceServer server;

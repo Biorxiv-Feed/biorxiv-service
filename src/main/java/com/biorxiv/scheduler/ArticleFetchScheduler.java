@@ -26,6 +26,7 @@ public class ArticleFetchScheduler {
     @EventListener(ApplicationReadyEvent.class)
     public void fetchOnStartup() {
         if (properties.fetch().runOnStartup()) {
+            log.info("Running bioRxiv fetch on startup (biorxiv.fetch.run-on-startup=true)");
             fetchDaily();
         }
     }

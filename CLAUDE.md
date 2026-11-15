@@ -49,7 +49,13 @@ Repositories hold only query methods that a known feature needs (dedup checks, s
 - Callers depend on the interface; implementations use `@Slf4j`, `@RequiredArgsConstructor` (constructor injection) and class-level `@Transactional`, with `@Transactional(readOnly = true)` on read methods. Updates rely on dirty checking (modify the managed entity, no explicit `save`).
 - Services may call other services (e.g. `SubscriptionService` → `UserService.getById`) rather than reaching into another entity's repository.
 - Missing entity → `NotFoundException`; invalid argument → `IllegalArgumentException`.
-- Logging: `info` for state changes, `debug` for per-item detail, `warn` for failed deliveries/ignored updates. Log ids, not usernames or message content.
+- Logging (`@Slf4j`; level set by `logging.level.com.biorxiv`, default `info`):
+  - `info`: state changes and run summaries. Per item only where each item matters: every **new** article in a fetch, every sent notification, (un)subscribe, user changes.
+  - `debug`: per-page/per-batch detail, already-stored articles, no-op calls (already subscribed, already inactive), window choice.
+  - `trace`: `ArticleServiceImpl` per-item saves/duplicates (the fetch already logs them).
+  - `warn`: something was dropped or degraded but the app carries on: skipped records, catch-up limit hit, failed HTTP attempts (`RetryEventLogger`), failed deliveries, ignored updates, unexpected API status.
+  - `error`: a whole run failed (scheduler), with the stack trace.
+  - Log ids, not usernames or message content. Article titles are public data and are logged, cut to 100 characters.
 - "Now" comes from the injected `Clock` bean, never `LocalDateTime.now()` — tests replace it with a fixed clock. (`created_at` is the exception: Hibernate's `@CreationTimestamp` uses system time.)
 - Categories are matched as exact strings, so every write and lookup goes through `CategoryUtils.normalize` (trim, collapse spaces, lower case). Article and subscription categories must use the same form.
 - Business rules currently in services: daily limit range `UserService.MIN/MAX_DAILY_ARTICLE_LIMIT` (1–50); a failed notification is retried while `PENDING` and becomes `FAILED` after `NotificationService.MAX_ATTEMPTS` (3); status updates on a non-`PENDING` notification are ignored with a warning. Entities reference each other via JPA relationships (`Subscription`/`Notification` → `User`, `Notification` → `Article`). JPQL that names an enum constant uses its FQN (`com.biorxiv.entity.NotificationStatus.SENT`) — update it if the package moves.
