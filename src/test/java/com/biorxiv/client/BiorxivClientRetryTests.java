@@ -53,7 +53,7 @@ class BiorxivClientRetryTests {
     private static final String URL = "https://api.biorxiv.org/details/biorxiv/2026-11-12/2026-11-12/0/json";
 
     @Autowired
-    private BiorxivClient client;
+    private BiorxivClientImpl client;   // concrete type: only this bean is under test
 
     @Autowired
     private MockRestServiceServer server;
