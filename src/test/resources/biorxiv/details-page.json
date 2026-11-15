@@ -1,0 +1,48 @@
+{
+  "messages": [
+    {
+      "status": "ok",
+      "category": "all",
+      "interval": "2026-11-12:2026-11-12",
+      "cursor": "30",
+      "count": 2,
+      "count_new_papers": "155",
+      "total": "308"
+    }
+  ],
+  "collection": [
+    {
+      "title": "A first preprint",
+      "authors": "Doe, J.; Roe, R.",
+      "author_corresponding": "Jane Doe",
+      "author_corresponding_institution": "Some University",
+      "doi": "10.1101/2026.11.10.000001",
+      "date": "2026-11-12",
+      "version": "1",
+      "type": "new results",
+      "license": "cc_by",
+      "category": "neuroscience",
+      "jatsxml": "https://www.biorxiv.org/content/early/2026/11/12/2026.11.10.000001.source.xml",
+      "abstract": "Abstract one.",
+      "published": "NA",
+      "server": "bioRxiv",
+      "funder": "a field the API may add later"
+    },
+    {
+      "title": "A revised preprint",
+      "authors": "Smith, A.",
+      "author_corresponding": "Alex Smith",
+      "author_corresponding_institution": "Another Institute",
+      "doi": "10.1101/2026.10.01.000002",
+      "date": "2026-11-12",
+      "version": "3",
+      "type": "confirmatory results",
+      "license": "cc_no",
+      "category": "plant biology",
+      "jatsxml": "https://www.biorxiv.org/content/early/2026/11/12/2026.10.01.000002.source.xml",
+      "abstract": "Abstract two.",
+      "published": "10.1038/s41586-026-00001-1",
+      "server": "bioRxiv"
+    }
+  ]
+}

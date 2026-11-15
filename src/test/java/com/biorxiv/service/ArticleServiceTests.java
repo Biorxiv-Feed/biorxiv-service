@@ -1,5 +1,6 @@
 package com.biorxiv.service;
 
+import com.biorxiv.TestArticles;
 import com.biorxiv.TestcontainersConfiguration;
 import com.biorxiv.entity.Article;
 import com.biorxiv.exception.NotFoundException;
@@ -54,7 +55,7 @@ class ArticleServiceTests {
 
     @Test
     void findAndGet() {
-        Article saved = articleService.saveIfNew(article("10.1101/a", 1, null)).orElseThrow();
+        Article saved = articleService.saveIfNew(article("10.1101/a", 1, "genomics")).orElseThrow();
 
         assertThat(articleService.findByDoiAndVersion("10.1101/a", 1)).contains(saved);
         assertThat(articleService.getById(saved.getId())).isEqualTo(saved);
@@ -62,6 +63,6 @@ class ArticleServiceTests {
     }
 
     private static Article article(String doi, int version, String category) {
-        return Article.builder().doi(doi).version(version).title("Title").category(category).build();
+        return TestArticles.article(doi, version).category(category).build();
     }
 }

@@ -1,5 +1,6 @@
 package com.biorxiv.service;
 
+import com.biorxiv.TestArticles;
 import com.biorxiv.TestcontainersConfiguration;
 import com.biorxiv.entity.Article;
 import com.biorxiv.entity.Notification;
@@ -59,7 +60,7 @@ class NotificationServiceTests {
         assertThat(notificationService.createForArticle(article)).isEqualTo(1);
         assertThat(notificationService.createForArticle(article)).isZero();
         assertThat(notificationRepository.existsByUserIdAndArticleId(alice.getId(), article.getId())).isTrue();
-        assertThat(notificationService.createForArticle(newArticle(null))).isZero();
+        assertThat(notificationService.createForArticle(newArticle("zoology"))).isZero();   // no subscribers
     }
 
     @Test
@@ -132,10 +133,7 @@ class NotificationServiceTests {
     }
 
     private Article newArticle(String category) {
-        return articleService.saveIfNew(Article.builder()
-                .doi("10.1101/test." + (++articleCounter))
-                .version(1)
-                .title("Title")
+        return articleService.saveIfNew(TestArticles.article("10.1101/test." + (++articleCounter), 1)
                 .category(category)
                 .build()).orElseThrow();
     }
