@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -26,16 +27,18 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public Subscription subscribe(Long userId, String category) {
         String normalized = requireCategory(category);
 
-        return subscriptionRepository.findByUserIdAndCategory(userId, normalized)
-                .orElseGet(() -> {
-                    User user = userService.getById(userId);
-                    Subscription subscription = subscriptionRepository.save(Subscription.builder()
-                            .user(user)
-                            .category(normalized)
-                            .build());
-                    log.info("User id={} subscribed to '{}'", userId, normalized);
-                    return subscription;
-                });
+        Optional<Subscription> existing = subscriptionRepository.findByUserIdAndCategory(userId, normalized);
+        if (existing.isPresent()) {
+            log.debug("User id={} is already subscribed to '{}'", userId, normalized);
+            return existing.get();
+        }
+        User user = userService.getById(userId);
+        Subscription subscription = subscriptionRepository.save(Subscription.builder()
+                .user(user)
+                .category(normalized)
+                .build());
+        log.info("User id={} subscribed to '{}'", userId, normalized);
+        return subscription;
     }
 
     @Override
@@ -47,6 +50,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         boolean removed = subscriptionRepository.deleteByUserIdAndCategory(userId, normalized) > 0;
         if (removed) {
             log.info("User id={} unsubscribed from '{}'", userId, normalized);
+        } else {
+            log.debug("User id={} was not subscribed to '{}'", userId, normalized);
         }
         return removed;
     }

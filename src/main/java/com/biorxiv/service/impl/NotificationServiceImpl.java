@@ -43,8 +43,14 @@ public class NotificationServiceImpl implements NotificationService {
                     .build());
             created++;
         }
-        log.info("Created {} notifications for article id={} category='{}' ({} subscribers)",
-                created, article.getId(), article.getCategory(), subscribers.size());
+        if (created > 0) {
+            log.info("Created {} notifications for article id={} category='{}' ({} subscribers)",
+                    created, article.getId(), article.getCategory(), subscribers.size());
+        } else {
+            // Most articles have no subscribers; keep INFO for articles that actually reach someone.
+            log.debug("No new notifications for article id={} category='{}' ({} subscribers)",
+                    article.getId(), article.getCategory(), subscribers.size());
+        }
         return created;
     }
 
@@ -54,8 +60,10 @@ public class NotificationServiceImpl implements NotificationService {
         if (batchSize <= 0) {
             throw new IllegalArgumentException("Batch size must be positive, got " + batchSize);
         }
-        return notificationRepository.findByStatusOrderByCreatedAtAscIdAsc(
+        List<Notification> batch = notificationRepository.findByStatusOrderByCreatedAtAscIdAsc(
                 NotificationStatus.PENDING, Limit.of(batchSize));
+        log.debug("Loaded {} pending notifications (batch size {})", batch.size(), batchSize);
+        return batch;
     }
 
     @Override
@@ -68,7 +76,8 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setAttempts(notification.getAttempts() + 1);
         notification.setSentAt(LocalDateTime.now(clock));
         notification.setLastError(null);
-        log.debug("Notification id={} sent (attempt {})", notificationId, notification.getAttempts());
+        log.info("Notification id={} sent to user id={} (article id={}, attempt {})", notificationId,
+                notification.getUser().getId(), notification.getArticle().getId(), notification.getAttempts());
     }
 
     @Override
@@ -102,6 +111,9 @@ public class NotificationServiceImpl implements NotificationService {
     public int remainingDailyQuota(Long userId) {
         User user = userService.getById(userId);
         long remaining = user.getDailyArticleLimit() - countSentToday(userId);
+        if (remaining <= 0) {
+            log.debug("User id={} reached the daily limit of {} articles", userId, user.getDailyArticleLimit());
+        }
         return (int) Math.max(0, remaining);
     }
 

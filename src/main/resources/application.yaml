@@ -38,3 +38,8 @@ biorxiv:
     lookback-days: 2        # always re-fetch today-2 .. today; late-indexed papers and the UTC vs US-East date offset
     max-catch-up-days: 7    # after downtime, go back at most this far
     max-pages: 200          # safety stop for pagination (30 records per page)
+
+logging:
+  level:
+    # INFO: runs, new articles, state changes. DEBUG adds pages, already-stored articles, window choice.
+    com.biorxiv: info

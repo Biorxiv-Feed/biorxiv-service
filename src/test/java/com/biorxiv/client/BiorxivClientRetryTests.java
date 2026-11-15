@@ -3,6 +3,7 @@ package com.biorxiv.client;
 import com.biorxiv.client.impl.BiorxivClientImpl;
 import com.biorxiv.config.BiorxivClientConfig;
 import com.biorxiv.config.BiorxivProperties;
+import com.biorxiv.config.RetryEventLogger;
 import com.biorxiv.config.SchedulingConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
         "biorxiv.api.retry.max-retries=3",
         "biorxiv.api.retry.delay-ms=1",
         "biorxiv.api.retry.multiplier=1"})
-@Import({BiorxivClientConfig.class, SchedulingConfig.class})
+@Import({BiorxivClientConfig.class, SchedulingConfig.class, RetryEventLogger.class})
 @ImportAutoConfiguration(AopAutoConfiguration.class)
 @EnableConfigurationProperties(BiorxivProperties.class)
 class BiorxivClientRetryTests {

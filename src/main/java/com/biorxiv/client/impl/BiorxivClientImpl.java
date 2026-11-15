@@ -23,6 +23,8 @@ import java.util.List;
 public class BiorxivClientImpl implements BiorxivClient {
 
     static final String DETAILS_PATH = "/details/{server}/{from}/{to}/{cursor}/json";
+    private static final String STATUS_OK = "ok";
+    private static final String STATUS_EMPTY = "no posts found";
 
     private final RestClient restClient;
     private final String server;
@@ -50,15 +52,22 @@ public class BiorxivClientImpl implements BiorxivClient {
                 .uri(DETAILS_PATH, server, from, to, cursor)
                 .retrieve()
                 .body(BiorxivResponse.class);
-        return toPage(response);
+        BiorxivPage page = toPage(response);
+        log.debug("bioRxiv {}..{} cursor={}: {} records, total {}", from, to, cursor, page.articles().size(), page.total());
+        return page;
     }
 
     private static BiorxivPage toPage(BiorxivResponse response) {
+        BiorxivMessage message = response == null || response.messages() == null || response.messages().isEmpty()
+                ? null : response.messages().getFirst();
+        String status = message != null ? message.status() : null;
+        if (!STATUS_OK.equals(status) && !STATUS_EMPTY.equals(status)) {
+            // Not an error by itself, but a sign the API format changed or the request was not understood.
+            log.warn("Unexpected bioRxiv response status '{}'", status);
+        }
         if (response == null || response.collection() == null || response.collection().isEmpty()) {
             return BiorxivPage.EMPTY;
         }
-        BiorxivMessage message = response.messages() == null || response.messages().isEmpty()
-                ? null : response.messages().getFirst();
         List<BiorxivArticleDto> articles = response.collection();
         int total = message != null && message.total() != null ? message.total() : articles.size();
         return new BiorxivPage(articles, total);
