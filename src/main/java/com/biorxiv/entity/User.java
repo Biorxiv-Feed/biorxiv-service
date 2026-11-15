@@ -1,7 +1,5 @@
-package com.biorxiv.user;
+package com.biorxiv.entity;
 
-import com.biorxiv.notification.Notification;
-import com.biorxiv.subscription.Subscription;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

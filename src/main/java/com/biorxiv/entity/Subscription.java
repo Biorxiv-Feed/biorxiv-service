@@ -1,6 +1,5 @@
-package com.biorxiv.subscription;
+package com.biorxiv.entity;
 
-import com.biorxiv.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

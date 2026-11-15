@@ -21,14 +21,25 @@ Java 21 · Spring Boot 4.1.2 · Spring Data JPA / Hibernate · PostgreSQL · Fly
 
 ## Architecture
 
-Modular monolith with one package per business module under `com.biorxiv`:
+Monolith covering four business areas:
 
-| Module | Responsibility |
+| Area | Responsibility |
 |---|---|
-| `article` | Article retrieval, processing and persistence |
-| `user` | Telegram users and their account information |
-| `subscription` | User subscriptions to article categories |
-| `notification` | Notification creation, tracking and delivery |
+| Article | Article retrieval, processing and persistence |
+| User | Telegram users and their account information |
+| Subscription | User subscriptions to article categories |
+| Notification | Notification creation, tracking and delivery |
+
+Code under `com.biorxiv` is organized by layer:
+
+| Package | Contents |
+|---|---|
+| `entity` | JPA entities and enums |
+| `repository` | Spring Data JPA repositories |
+| `service` / `service.impl` | Business services: interfaces and their implementations |
+| `config` | Spring configuration (e.g. the application `Clock`) |
+| `exception` | Application exceptions |
+| `util` | Small shared helpers (e.g. category normalization) |
 
 ### Data model
 

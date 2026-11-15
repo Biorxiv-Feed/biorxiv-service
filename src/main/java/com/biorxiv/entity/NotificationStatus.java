@@ -1,4 +1,4 @@
-package com.biorxiv.notification;
+package com.biorxiv.entity;
 
 /**
  * Delivery state of a {@link Notification}. Persisted by name ({@code EnumType.STRING}),
