@@ -15,3 +15,26 @@ spring:
     hibernate:
       # Schema is owned by Flyway; Hibernate only checks that entities match it.
       ddl-auto: validate
+
+  http:
+    clients:
+      # Timeouts of Boot-built HTTP clients (used by the bioRxiv RestClient)
+      connect-timeout: 10s
+      read-timeout: 30s
+
+biorxiv:
+  api:
+    base-url: https://api.biorxiv.org
+    server: biorxiv
+    retry:                  # per page: network errors, 5xx and 429 only
+      max-retries: 3        # attempts after the first one
+      delay-ms: 2000        # wait before the first retry
+      multiplier: 2         # 2s, 4s, 8s
+  fetch:
+    enabled: true
+    run-on-startup: false   # also fetch once when the app starts
+    cron: "0 0 6 * * *"     # daily at 06:00 in the zone below
+    zone: UTC
+    lookback-days: 2        # always re-fetch today-2 .. today; late-indexed papers and the UTC vs US-East date offset
+    max-catch-up-days: 7    # after downtime, go back at most this far
+    max-pages: 200          # safety stop for pagination (30 records per page)
