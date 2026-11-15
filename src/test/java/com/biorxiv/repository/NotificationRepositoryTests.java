@@ -2,6 +2,7 @@ package com.biorxiv.repository;
 
 import com.biorxiv.entity.Notification;
 import com.biorxiv.entity.NotificationStatus;
+import com.biorxiv.TestArticles;
 import com.biorxiv.TestcontainersConfiguration;
 import com.biorxiv.entity.Article;
 import com.biorxiv.entity.User;
@@ -103,10 +104,6 @@ class NotificationRepositoryTests {
     }
 
     private Article newArticle() {
-        return em.persist(Article.builder()
-                .doi("10.1101/test." + (++articleCounter))
-                .version(1)
-                .title("Title")
-                .build());
+        return em.persist(TestArticles.article("10.1101/test." + (++articleCounter), 1).build());
     }
 }

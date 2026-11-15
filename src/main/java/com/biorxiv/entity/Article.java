@@ -77,18 +77,48 @@ public class Article {
     @Column(name = "abstract", columnDefinition = "TEXT")
     private String abstractText;
 
+    @NotBlank
     @Size(max = 255)
-    @Column(name = "category")
+    @Column(name = "category", nullable = false)
     @ToString.Include
     private String category;
 
-    @Column(name = "publication_date")
+    /** Date this version was posted, as labelled by bioRxiv (not converted to any time zone). */
+    @NotNull
+    @Column(name = "publication_date", nullable = false)
     @ToString.Include
     private LocalDate publicationDate;
 
     /** The {@code jatsxml} field exactly as returned by the bioRxiv API. */
     @Column(name = "jatsxml", columnDefinition = "TEXT")
     private String jatsXml;
+
+    /** Normalized lower case, e.g. "new results", "confirmatory results", "withdrawn". */
+    @Size(max = 64)
+    @Column(name = "type", length = 64)
+    @ToString.Include
+    private String type;
+
+    /** License code as returned by the API, e.g. "cc_by", "cc_no". */
+    @Size(max = 64)
+    @Column(name = "license", length = 64)
+    private String license;
+
+    /** Journal DOI once the preprint is published; {@code null} while unpublished (API "NA"). */
+    @Size(max = 255)
+    @Column(name = "published_doi")
+    private String publishedDoi;
+
+    @Column(name = "corresponding_author", columnDefinition = "TEXT")
+    private String correspondingAuthor;
+
+    @Column(name = "corresponding_author_institution", columnDefinition = "TEXT")
+    private String correspondingAuthorInstitution;
+
+    /** Preprint server as returned by the API ("bioRxiv"). */
+    @Size(max = 32)
+    @Column(name = "server", length = 32)
+    private String server;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

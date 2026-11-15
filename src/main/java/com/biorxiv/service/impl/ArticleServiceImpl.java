@@ -30,6 +30,8 @@ public class ArticleServiceImpl implements ArticleService {
             return Optional.empty();
         }
         article.setCategory(CategoryUtils.normalize(article.getCategory()));
+        // The API mixes "New Results" and "new results"; same canonical form as categories.
+        article.setType(CategoryUtils.normalize(article.getType()));
         Article saved = articleRepository.save(article);
         log.debug("Saved article id={} doi={} v{}", saved.getId(), saved.getDoi(), saved.getVersion());
         return Optional.of(saved);
