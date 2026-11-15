@@ -1,0 +1,103 @@
+package com.biorxiv.article;
+
+import com.biorxiv.notification.Notification;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Article retrieved from the bioRxiv API. Uniquely identified by DOI + version.
+ */
+@Entity
+@Table(
+        name = "articles",
+        uniqueConstraints = @UniqueConstraint(name = "uk_articles_doi_version", columnNames = {"doi", "version"}),
+        indexes = {
+                @Index(name = "idx_articles_category", columnList = "category"),
+                @Index(name = "idx_articles_publication_date", columnList = "publication_date")
+        }
+)
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
+@ToString(onlyExplicitlyIncluded = true)
+public class Article {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    @ToString.Include
+    private Long id;
+
+    @NotBlank
+    @Size(max = 255)
+    @Column(name = "doi", nullable = false)
+    @ToString.Include
+    private String doi;
+
+    @NotNull
+    @Positive
+    @Column(name = "version", nullable = false)
+    @ToString.Include
+    private Integer version;
+
+    @NotBlank
+    @Column(name = "title", nullable = false, columnDefinition = "TEXT")
+    @ToString.Include
+    private String title;
+
+    @Column(name = "authors", columnDefinition = "TEXT")
+    private String authors;
+
+    // "abstract" is a Java keyword, hence the different field name.
+    @Column(name = "abstract", columnDefinition = "TEXT")
+    private String abstractText;
+
+    @Size(max = 255)
+    @Column(name = "category")
+    @ToString.Include
+    private String category;
+
+    @Column(name = "publication_date")
+    @ToString.Include
+    private LocalDate publicationDate;
+
+    /** The {@code jatsxml} field exactly as returned by the bioRxiv API. */
+    @Column(name = "jatsxml", columnDefinition = "TEXT")
+    private String jatsXml;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @ToString.Include
+    private LocalDateTime createdAt;
+
+    @Builder.Default
+    @Setter(AccessLevel.NONE)
+    @OneToMany(mappedBy = "article")
+    private List<Notification> notifications = new ArrayList<>();
+}
